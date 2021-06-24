@@ -8,6 +8,8 @@ class BootstrapController extends Controller
 {
     public function indexAction()
     {
-        echo "hello";
+        $update = new UpdateDataController(['controller' => 'updatedata', 'action' => 'index']);
+
+        $update->indexAction();
     }
 }
