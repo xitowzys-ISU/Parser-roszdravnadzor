@@ -1,0 +1,24 @@
+name: Deploy
+
+on:
+  push:
+    branches: 
+      - master
+
+env:
+  DEPLOY_PATH: /var/www/html
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Делаем checkout текущей ветки
+      - uses: actions/checkout@v2
+      # Setup key
+      - run: set -eu
+      - run: mkdir "$HOME/.ssh"
+      - run: echo "${{ secrets.DEPLOY_SERVER_KEY }}" > "$HOME/.ssh/key"
+      - run: chmod 600 "$HOME/.ssh/key"
+      # Deploy
+      - name: Deploy with rsync
+        run: rsync -e "ssh -i $HOME/.ssh/key -o StrictHostKeyChecking=no" --archive --compress --delete ./ ${{ secrets.DEPLOY_SERVER_USERNAME }}@${{ secrets.DEPLOY_SERVER_HOST }}:${{ env.DEPLOY_PATH }}
