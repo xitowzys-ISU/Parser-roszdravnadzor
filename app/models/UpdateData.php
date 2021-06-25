@@ -3,8 +3,6 @@
 namespace app\models;
 
 use app\core\Model;
-use \PDO;
-use \PDOException;
 
 class UpdateData extends Model
 {
@@ -19,17 +17,17 @@ class UpdateData extends Model
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://roszdravnadzor.gov.ru/ajax/services/misearch?=",
+            CURLOPT_URL => BASIC_URL_AJAX,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => http_build_query($data),
-            CURLOPT_COOKIE => "uid=4415501648854257000",
             CURLOPT_HTTPHEADER => [
-                "Content-Type: application/x-www-form-urlencoded"
+                "Content-Type: application/x-www-form-urlencoded",
+                'Accept: application/json'
             ],
         ]);
 
@@ -41,7 +39,7 @@ class UpdateData extends Model
         if ($err) {
             return "cURL Error #:" . $err;
         } else {
-            return $response;
+            return json_decode($response, true);
         }
 
     }

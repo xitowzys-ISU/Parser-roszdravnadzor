@@ -25,3 +25,10 @@ define('TEMPLATES_DIR', 'templates/');
  * @var string
  */
 define('TEMPLATE', 'Default/');
+
+/**
+ * Link to the site that will parse
+ * 
+ * @var string
+ */
+define('BASIC_URL_AJAX', 'https://roszdravnadzor.gov.ru/ajax/services/misearch?=');
