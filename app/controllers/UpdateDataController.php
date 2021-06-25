@@ -11,10 +11,10 @@ class UpdateDataController extends Controller
     protected $json;
 
     public function indexAction()
-    {
-        $database = Database::getInstance();
-        
-        $this->json = $this->model->getJSON();
-        echo gettype($this->json);
+    { 
+        echo $this->model->checkTableDB();  
+        // $this->json = $this->model->getJSON();
+
+        // echo gettype($this->json);
     }
 }

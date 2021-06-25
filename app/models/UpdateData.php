@@ -3,13 +3,23 @@
 namespace app\models;
 
 use app\core\Model;
+use app\core\Database;
 
 class UpdateData extends Model
 {
+
+    protected $database;
+
     public function __construct()
     {
+        $this->database = Database::getInstance();
     }
     
+    /**
+     * Get json from a website
+     *
+     * @return array
+     */
     public function getJSON()
     {
 
@@ -42,5 +52,21 @@ class UpdateData extends Model
             return json_decode($response, true);
         }
 
+    }
+
+    /**
+     * Check if there are tables in the database
+     *
+     * @return bool
+     */
+    public function checkTableDB()
+    {
+        $sth = $this->database->prepare("SHOW TABLES");
+        $sth->execute();
+
+        if(empty($sth->fetchAll()))
+            return false;
+        else
+            return true;
     }
 }
