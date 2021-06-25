@@ -20,6 +20,7 @@ class UpdateData extends Model
      *
      * @return array
      */
+    // TODO: Сделать обработчик ошибок
     public function getJSON()
     {
 
@@ -59,6 +60,7 @@ class UpdateData extends Model
      *
      * @return bool
      */
+    // TODO: Сделать обработчик ошибок
     public function checkTableDB()
     {
         $sth = $this->database->prepare("SHOW TABLES");
@@ -68,5 +70,16 @@ class UpdateData extends Model
             return false;
         else
             return true;
+    }
+
+    /**
+     * Create tables for storing data
+     *
+     * @return void
+     */
+    // TODO: Сделать обработчик ошибок
+    public function createTableDB()
+    {
+        $this->database->exec(file_get_contents(SQL_DIR . "createTable.sql"));
     }
 }

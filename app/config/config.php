@@ -1,9 +1,9 @@
 <?php
 
-define('DB_HOST', '');
-define('DB_NAME', '');
-define('DB_USER', '');
-define('DB_PASS', '');
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'parser_roszdravnadzor');
+define('DB_USER', 'raidemot');
+define('DB_PASS', 'Yiczxsjo552880!');
 
 /**
  * Root path to the application
@@ -11,6 +11,13 @@ define('DB_PASS', '');
  * @var string
  */
 define('ROOT', $_SERVER['DOCUMENT_ROOT'] . '/');
+
+/**
+ * Path to sql files
+ * 
+ * @var string
+ */
+define('SQL_DIR', ROOT . 'app/sql/');
 
 /**
  * Path to templates
