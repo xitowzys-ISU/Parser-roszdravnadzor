@@ -12,10 +12,13 @@ class UpdateDataController extends Controller
 
     public function indexAction()
     { 
-        if(!$this->model->checkTableDB())
-            $this->model->createTableDB();
-        else
-            echo "ok";
+        // if(!$this->model->checkTableDB())
+        //     $this->model->createTableDB();
+        // else
+        //     echo "ok";
 
+        debug($this->model->getJSON(NULL));
+
+        // $this->model->getNumberRecordsYear();
     }
 }

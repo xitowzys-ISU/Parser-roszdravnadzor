@@ -14,17 +14,18 @@ class UpdateData extends Model
     {
         $this->database = Database::getInstance();
     }
-    
+
     /**
      * Get json from a website
      *
      * @return array
      */
     // TODO: Сделать обработчик ошибок
-    public function getJSON()
+    public function getJSON($data)
     {
+        if ($data === NULL)
+            $data = require 'app/config/parser.php';
 
-        $data = require 'app/config/parser.php';
         $curl = curl_init();
 
         curl_setopt_array($curl, [
@@ -32,7 +33,7 @@ class UpdateData extends Model
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_TIMEOUT => 30000,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => http_build_query($data),
@@ -52,7 +53,6 @@ class UpdateData extends Model
         } else {
             return json_decode($response, true);
         }
-
     }
 
     /**
@@ -66,7 +66,7 @@ class UpdateData extends Model
         $sth = $this->database->prepare("SHOW TABLES");
         $sth->execute();
 
-        if(empty($sth->fetchAll()))
+        if (empty($sth->fetchAll()))
             return false;
         else
             return true;
@@ -81,5 +81,41 @@ class UpdateData extends Model
     public function createTableDB()
     {
         $this->database->exec(file_get_contents(SQL_DIR . "createTable.sql"));
+    }
+
+    /**
+     * Number of records per year
+     * 
+     * @return array
+     */
+    public function getNumberRecordsYear()
+    {
+
+        $result = [];
+
+        $data = require 'app/config/parser.php';
+
+        $IterationCount = (date('Y') - 1990);
+
+        for ($i = $IterationCount; $i > 0; $i--) {
+            $dateFrom = date_create((date('Y') - $i) . '-01-01');
+            $dateTo = date_create((date('Y') - $i) . '-01-01');
+
+            if($i == 1)
+                $dateTo = date_create(date("Y-m-d"));
+            else
+                date_add($dateTo, date_interval_create_from_date_string('1 year'));
+
+                
+            $data['length'] = 1;
+
+            $data['dt_ru_from'] = date_format($dateFrom, 'd.m.Y');
+            $data['dt_ru_to'] = date_format($dateTo, 'd.m.Y');
+
+            $result += [date_format($dateFrom, 'Y') => $this->getJSON($data)["recordsFiltered"]];
+        }
+
+        debug($result);
+        return [];
     }
 }
