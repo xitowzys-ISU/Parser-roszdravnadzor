@@ -28,12 +28,17 @@ class Table extends Model
 
     public function setDate($dates_array =[])
     {
-            set_time_limit(6000);
-            $this->from = $dates_array['date-from'] ?? '1990-01-01';
-            $this->to = $dates_array['date-from'] ?? strval(date("Y-m-d"));
+        /*
+         * функция принимает опциональный массив.
+         * В нем могут содержаться ключи 'date-from' и 'date-to',
+         * если не содержится -> берется крайнее значение.
+         * Формат записи YYYY-MM-DD.
+         */
 
-            //TODO erase it
-//            $this->to = '2005-01-01';
+        //TODO test for time limit
+        set_time_limit(600);
+        $this->from = $dates_array['date-from'] ?? '1990-01-01';
+        $this->to = $dates_array['date-to'] ?? strval(date("Y-m-d"));
     }
 
     public function countRows($start, $end){
@@ -46,96 +51,51 @@ class Table extends Model
     }
 
 
-    public function getDataFromDB($start, $end)
+    public function getDataFromDB($from, $to, $batch_size, $offset)
     {
-        $sth = $this->database->prepare("SELECT `". implode("`, `", $this->attributes) . "` FROM `medical_products` WHERE (`validity_period` BETWEEN :start AND :end);");
-        $sth->bindParam(':start', $start);
-        $sth->bindParam(':end', $end);
+        $sth = $this->database->prepare("SELECT `". implode("`, `", $this->attributes) . "` FROM `medical_products` WHERE (`validity_period` BETWEEN :from AND :to) LIMIT " . $batch_size . " OFFSET " . $offset);
+        $sth->bindParam(':from', $from);
+        $sth->bindParam(':to', $to);
         $sth->execute();
 
         $ans = $sth->fetchAll(PDO::FETCH_ASSOC);
         $this->db_data = $ans;
-//        var_dump($this->db_data);
     }
 
 
     public function generateJSON($filename)
     {
-        $start_year = date("Y", strtotime($this->from));
-        $end_year = date("Y", strtotime($this->to));
+        $batch = 2;
+        $rows = $this->countRows($this->from, $this->to);
         $file_json = fopen($filename. ".json", "w");
         fwrite($file_json, '{"data" : [');
 
-        if ($start_year == $end_year)
+        for ($i = 0; $i < intdiv($rows + $batch - 1,  $batch); $i++)
         {
-            $this->getDataFromDB($this->from, $this->to);
-            fwrite($file_json, json_encode($this->db_data));
-            $this->data_length = count($this->db_data);
-        }
-        else
-        {
-            $comma_flag = false;
-
-            //first year
-            $this->getDataFromDB($this->from, $start_year . '-12-31');
-            if (count($this->db_data) > 0)
-                $comma_flag = true;
-            $this->data_length += count($this->db_data);
-            for ($i = 0; $i < count($this->db_data); $i++)
+            $this->getDataFromDB($this->from, $this->to, $batch, $batch * $i);
+            for ($j = 0; $j < count($this->db_data); $j++)
             {
-                fwrite($file_json, json_encode($this->db_data[$i]));
-                if ($i != count($this->db_data) - 1) {
-                    fwrite($file_json, ', ');
-                }
-            }
-
-            //middle years
-            for ($i = 0; $i < $end_year - $start_year - 1; $i++)
-            {
-                $this->getDataFromDB($start_year+$i+1 . '-01-01', $start_year+$i+1 . '-12-31');
-                $this->data_length += count($this->db_data);
-                if ($comma_flag and count($this->db_data)) {
-                    $comma_flag = true;
-                    fwrite($file_json, ', ');
-                }
-
-                for ($i = 0; $i < count($this->db_data); $i++)
-                {
-                    fwrite($file_json, json_encode($this->db_data[$i]));
-                    if ($i != count($this->db_data) - 1) {
-                        fwrite($file_json, ', ');
-                    }
-                }
-            }
-
-//            last year
-            $this->getDataFromDB($end_year . '-01-01', $this->to);
-            if ($comma_flag and count($this->db_data) > 0)
-                fwrite($file_json, ', ');
-            $this->data_length += count($this->db_data);
-
-            for ($i = 0; $i < count($this->db_data); $i++)
-            {
-                fwrite($file_json, json_encode($this->db_data[$i]));
-                if ($i != count($this->db_data) - 1) {
-                    fwrite($file_json, ', ');
+                fwrite($file_json, json_encode($this->db_data[$j]));
+                if ($i != intdiv($rows + $batch - 1,  $batch) -1  or $j != count($this->db_data) -1) {
+                    fwrite($file_json,', ');
                 }
             }
         }
-
         fwrite($file_json, ']');
         fwrite($file_json, ',');
 //        json-array len
         fwrite($file_json, '"length": ');
-        fwrite($file_json, $this->data_length);
+        fwrite($file_json, $rows);
 //        json end
         fwrite($file_json, '}');
-
-
     }
+
 
     public function getJSON(): string
     {
+        /*
+         * НЕ РАБОТАЕТ!
+         */
         return $this->json;
     }
 
