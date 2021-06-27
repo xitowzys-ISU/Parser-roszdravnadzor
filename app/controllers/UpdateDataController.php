@@ -3,7 +3,7 @@
 namespace app\controllers;
 
 use app\core\Controller;
-use app\core\Database;
+use \TypeError;
 
 class UpdateDataController extends Controller
 {
@@ -11,14 +11,40 @@ class UpdateDataController extends Controller
     protected $json;
 
     public function indexAction()
-    { 
-        // if(!$this->model->checkTableDB())
-        //     $this->model->createTableDB();
-        // else
-        //     echo "ok";
+    {
+        $data = require 'app/config/parser.php';
 
-        debug($this->model->getJSON(NULL));
+        // Заполнение базу данных
+        if (!$this->model->checkTableDB()) {
+            $this->model->createTableDB();
 
-        // $this->model->getNumberRecordsYear();
+            $amountData = $this->model->getNumberRecordsYear();
+
+            foreach ($amountData as $key => $value) {
+                $numberPages = intval(ceil($value / $data['length']));
+
+                for ($i = 0; $i < $numberPages; $i++) {
+                    if ($i === 0)
+                        $json = $this->model->getData($key);
+                    else
+                        $json = $this->model->getData($key, $data['length'] * $i);
+
+
+                    if ($json === -1) {
+                        sleep(30);
+                        --$i;
+                        continue;
+                    }
+
+                    if (array_key_exists('message', $json['data'])) {
+                        sleep(30);
+                        --$i;
+                        continue;
+                    }
+
+                    $this->model->saveDataInDB($json);
+                }
+            }
+        }
     }
 }

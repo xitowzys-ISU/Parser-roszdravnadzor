@@ -212,9 +212,9 @@ return [
     //
     'order[0][dir]' => 'asc',
     //
-    'start' => '1',
+    'start' => '0',
     // Получаемое количество записей
-    'length' => '25',
+    'length' => '1000',
     //
     'search[value]' => '',
     //
