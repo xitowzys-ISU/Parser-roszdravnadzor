@@ -13,11 +13,13 @@ spl_autoload_register(function ($class){
     }
 });
 //
-//$router = new Router();
-$tb = new Table();
-//$tb->setDate();
-$tb->setName('fileNameTest');
- $tb->generateJSON();
+$router = new Router();
+// $tb = new Table();
+// $tb->setDate();
+//$tb->countRows('1990-01-01', '2021-01-01');
+//$tb->getDataFromDB();
+//$tb->splitTimeIntervals();
+// $tb->generateJSON('file');
 
-//$router->run();
+$router->run();
 

@@ -8,8 +8,11 @@ class BootstrapController extends Controller
 {
     public function indexAction()
     {
-        $update = new UpdateDataController(['controller' => 'updatedata', 'action' => 'index']);
+        $this->data['{TITLE}'] = 'Регистрация';
+        // $update = new UpdateDataController(['controller' => 'updatedata', 'action' => 'index']);
 
-        $update->indexAction();
+        // $update->indexAction();
+
+        $this->view->render($this->data);
     }
 }
