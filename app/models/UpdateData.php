@@ -201,12 +201,13 @@ class UpdateData extends Model
     }
 
     /**
-     * Checking an entry for a duplicate in the database
+     * Deleting duplicate rows by a unique registry number
      *
      * @param array $data
      * @return void
      */
-    protected function checkDuplicate(array $data)
+    protected function deleteDuplicateRows()
     {
+        // ALTER IGNORE TABLE `medical_products` ADD UNIQUE INDEX(registry_entry_id);
     }
 }

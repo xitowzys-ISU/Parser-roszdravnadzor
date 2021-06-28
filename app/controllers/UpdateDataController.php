@@ -45,6 +45,8 @@ class UpdateDataController extends Controller
                     $this->model->saveDataInDB($json);
                 }
             }
+
+            $this->model->deleteDuplicateRows();
         }
     }
 }

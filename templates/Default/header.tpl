@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <!-- TODO add correct route to css -->
-    <link href="form.css" type="text/css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{TITLE}</title>
+
+    <link rel="stylesheet" href="{TEMPLATE_SRC}css/styles.css">
 </head>
