@@ -11,7 +11,10 @@
         <input type="date" class="registration_date-to" name="dateTo">
         <input type="submit" value="Дайте JSON">
     </div>
+
 </form>
+
+<p id="process">Выполнено: 0%</p>
 <script>
     document.getElementsByClassName('registration_date-from').valueAsDate = new Date();
     document.getElementsByClassName('registration_date-to').valueAsDate = new Date();

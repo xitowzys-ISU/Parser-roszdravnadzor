@@ -3,7 +3,7 @@
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'parser_roszdravnadzor');
 define('DB_USER', 'raidemot');
-define('DB_PASS', 'PASSWORD');
+define('DB_PASS', 'Yiczxsjo552880!');
 
 /**
  * Root path to the application
