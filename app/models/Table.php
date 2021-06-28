@@ -9,14 +9,12 @@ use PDO;
 
 class Table extends Model
 {
-
     protected $database;
-    protected $data;
-    protected $db_data;
-    protected $data_length = 0;
     protected $json = '';
     protected $from = '1990-01-01';
-    protected $to;
+    protected $to = '2100-01-01';
+    protected $file_name = 'file';
+    protected $batch_size = 11;
     protected $attributes = [
         'registry_entry_id',
         'registration_number',
@@ -43,6 +41,14 @@ class Table extends Model
         $this->database = Database::getInstance();
     }
 
+    public function setName($file_name)
+    {
+        /*
+         * default $this->file_name = 'file'
+         */
+        $this->file_name = $file_name;
+    }
+
     public function setDate($dates_array = [])
     {
         /*
@@ -58,41 +64,42 @@ class Table extends Model
         $this->to = $dates_array['date-to'] ?? strval(date("Y-m-d"));
     }
 
-    public function countRows($start, $end)
+
+    public function countRows()
     {
-        $sth = $this->database->prepare("SELECT COUNT(*) as 'count' FROM `medical_products` WHERE (`validity_period` BETWEEN :start AND :end);");
-        $sth->bindParam(':start', $start);
-        $sth->bindParam(':end', $end);
+        $sth = $this->database->prepare("SELECT COUNT(*) as 'count' FROM `medical_products` WHERE (`validity_period` BETWEEN :from AND :to);");
+        $sth->bindParam(':from', $this->from);
+        $sth->bindParam(':to', $this->to);
         $sth->execute();
         $ans = $sth->fetchAll(PDO::FETCH_ASSOC);
         return intval($ans[0]['count']);
     }
 
 
-    public function getDataFromDB($from, $to, $batch_size, $offset)
+    public function getDataFromDB($offset)
     {
-        $sth = $this->database->prepare("SELECT `" . implode("`, `", $this->attributes) . "` FROM `medical_products` WHERE (`validity_period` BETWEEN :from AND :to) LIMIT " . $batch_size . " OFFSET " . $offset);
-        $sth->bindParam(':from', $from);
-        $sth->bindParam(':to', $to);
+        $sth = $this->database->prepare("SELECT `" . implode("`, `", $this->attributes) . "` FROM `medical_products` WHERE (`validity_period` BETWEEN :from AND :to) LIMIT " . $this->batch_size . " OFFSET " . $offset);
+        $sth->bindParam(':from', $this->from);
+        $sth->bindParam(':to', $this->to);
         $sth->execute();
 
         $ans = $sth->fetchAll(PDO::FETCH_ASSOC);
-        $this->db_data = $ans;
+        return $ans;
     }
 
 
-    public function generateJSON($filename)
+    public function generateJSON()
     {
-        $batch = 2;
-        $rows = $this->countRows($this->from, $this->to);
-        $file_json = fopen($filename . ".json", "w");
-        fwrite($file_json, '{"data" : [');
 
-        for ($i = 0; $i < intdiv($rows + $batch - 1,  $batch); $i++) {
-            $this->getDataFromDB($this->from, $this->to, $batch, $batch * $i);
-            for ($j = 0; $j < count($this->db_data); $j++) {
-                fwrite($file_json, json_encode($this->db_data[$j]));
-                if ($i != intdiv($rows + $batch - 1,  $batch) - 1  or $j != count($this->db_data) - 1) {
+        $rows = $this->countRows();
+        $file_json = fopen($this->file_name . ".json", "w");
+        $array_iterations = intdiv($rows + $this->batch_size - 1,  $this->batch_size);
+        fwrite($file_json, '{"data" : [');
+        for ($i = 0; $i < $array_iterations; $i++) {
+            $data = $this->getDataFromDB($this->batch_size * $i);
+            for ($j = 0; $j < count($data); $j++) {
+                fwrite($file_json, json_encode($data[$j]));
+                if ($i != $array_iterations - 1  or $j != count($data) - 1) {
                     fwrite($file_json, ', ');
                 }
             }
