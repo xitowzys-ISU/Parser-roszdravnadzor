@@ -14,13 +14,13 @@ class Table extends Model
     protected $from = '1990-01-01';
     protected $to = '2100-01-01';
     protected $file_name = 'file';
-    protected int $batch_size = 11;
+    protected $batch_size = 11;
     protected $attributes = [
         'registry_entry_id',
         'registration_number',
         'validity_period',
         'registration_validity_period',
-        'registration_validity_period_indefinitely',
+        'registration_validity_period_other',
         'name',
         'applicant_organization',
         'applicant_location',
@@ -60,8 +60,8 @@ class Table extends Model
 
         //TODO test for time limit
         set_time_limit(600);
-        $this->from = $dates_array['date-from'] ?? '1990-01-01';
-        $this->to = $dates_array['date-to'] ?? strval(date("Y-m-d"));
+        $this->from = $dates_array['dateFrom'] ?? '1990-01-01';
+        $this->to = $dates_array['dateTo'] ?? strval(date("Y-m-d"));
     }
 
 
@@ -96,6 +96,11 @@ class Table extends Model
         $array_iterations = intdiv($rows + $this->batch_size - 1,  $this->batch_size);
         fwrite($file_json, '{"data" : [');
         for ($i = 0; $i < $array_iterations; $i++) {
+
+            session_start();
+            $_SESSION['ls_sleep_test'] = intval(($i / $array_iterations) * 100);
+            session_write_close();
+
             $data = $this->getDataFromDB($this->batch_size * $i);
             for ($j = 0; $j < count($data); $j++) {
                 fwrite($file_json, json_encode($data[$j]));
@@ -113,6 +118,10 @@ class Table extends Model
         fwrite($file_json, '}');
     }
 
+    public function progress() {
+        session_start();
+        echo isset($_SESSION['ls_sleep_test']) ? $_SESSION['ls_sleep_test'] : '';
+    }
 
     public function getJSON(): string
     {
