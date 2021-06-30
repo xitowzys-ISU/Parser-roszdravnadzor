@@ -1,9 +1,10 @@
 <?php
 
-use app\core\Router;
+namespace app\core;
+
+use app\models\UpdateData;
 
 require 'app/config/config.php';
-require 'app/lib/Dev.php';
 
 spl_autoload_register(function ($class) {
     $path = str_replace('\\', '/', $class . '.php');
@@ -12,5 +13,5 @@ spl_autoload_register(function ($class) {
     }
 });
 
-$router = new Router();
-$router->run();
+$update = new UpdateData();
+echo $update->updateDataWeek();

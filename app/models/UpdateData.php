@@ -6,6 +6,8 @@ use app\core\Model;
 use app\core\Database;
 use \PDOException;
 
+require 'app/lib/CLIProgressBar.php';
+
 class UpdateData extends Model
 {
 
@@ -209,5 +211,17 @@ class UpdateData extends Model
     protected function deleteDuplicateRows()
     {
         // ALTER IGNORE TABLE `medical_products` ADD UNIQUE INDEX(registry_entry_id);
+    }
+
+    public function updateDataWeek()
+    {
+        $total = 4535;
+        for ($i = 0; $i < $total; $i++) {
+            $percentage = $i / $total * 100;
+            showProgressBar($percentage, 2);
+        }
+
+        print PHP_EOL;
+        print "done!" . PHP_EOL;
     }
 }

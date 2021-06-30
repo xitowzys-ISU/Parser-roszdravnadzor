@@ -14,7 +14,7 @@ class UpdateDataController extends Controller
     {
         $data = require 'app/config/parser.php';
 
-        // Заполнение базу данных
+        // Filling in the database
         if (!$this->model->checkTableDB()) {
             $this->model->createTableDB();
 
