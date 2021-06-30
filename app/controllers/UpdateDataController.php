@@ -14,11 +14,11 @@ class UpdateDataController extends Controller
     {
         $data = require 'app/config/parser.php';
 
-        // Заполнение базу данных
+        // Filling in the database
         if (!$this->model->checkTableDB()) {
             $this->model->createTableDB();
 
-            $amountData = $this->model->getNumberRecordsYear();
+            $amountData = $this->model->getNumberRecordsPeriod("01-01-1990", date("Y-m-d"));
 
             foreach ($amountData as $key => $value) {
                 $numberPages = intval(ceil($value / $data['length']));
