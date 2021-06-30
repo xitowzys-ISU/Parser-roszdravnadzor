@@ -18,7 +18,7 @@ class UpdateDataController extends Controller
         if (!$this->model->checkTableDB()) {
             $this->model->createTableDB();
 
-            $amountData = $this->model->getNumberRecordsYear();
+            $amountData = $this->model->getNumberRecordsPeriod("01-01-1990", date("Y-m-d"));
 
             foreach ($amountData as $key => $value) {
                 $numberPages = intval(ceil($value / $data['length']));

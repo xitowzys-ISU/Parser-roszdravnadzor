@@ -5,6 +5,9 @@ namespace app\models;
 use app\core\Model;
 use app\core\Database;
 use \PDOException;
+use \DateTime;
+use \DatePeriod;
+use \DateInterval;
 
 require 'app/lib/CLIProgressBar.php';
 
@@ -85,42 +88,64 @@ class UpdateData extends Model
     }
 
     /**
-     * Number of records per year
+     * Number of records for the period
      * 
      * @return array
      */
-    public function getNumberRecordsYear()
+    public function getNumberRecordsPeriod(string $dateFrom, string $dateTo)
     {
 
         $result = [];
 
         $data = require 'app/config/parser.php';
 
-        $IterationCount = (date('Y') - 1990);
+        $dateFrom = date_create($dateFrom);
+        $dateTo = date_create($dateTo);
 
-        for ($i = $IterationCount; $i > 0; $i--) {
+        $interval = $dateTo->diff($dateFrom);
 
-            $dateFrom = date_create((date('Y') - $i) . '-01-01');
-            $dateTo = date_create((date('Y') - $i) . '-01-01');
+        if ($interval->y > 1 || ($interval->y === 1 && ($interval->d >= 1 || $interval->m >= 1))) {
 
-            if ($i == 1)
-                $dateTo = date_create(date("Y-m-d"));
-            else
-                date_add($dateTo, date_interval_create_from_date_string('1 year'));
+            $dates = [];
 
+            $years  = intval($dateTo->format('Y')) - intval($dateFrom->format('Y'));
 
+            $period = new DatePeriod($dateFrom, new DateInterval('P1Y'), $years);
+
+            foreach ($period as $date) {
+                array_push($dates, $date->format('d.m.Y'));
+            }
+
+            for ($i = 0; $i < count($dates); $i++) {
+
+                if (count($dates) - 1 === $i) {
+                    if (!($interval->d >= 1 || $interval->m >= 1))
+                        continue;
+
+                    $result += [$dates[$i] . '-' . $dateTo->format('d.m.Y') => NULL];
+                } else
+                    $result += [$dates[$i] . '-' . $dates[$i + 1] => NULL];
+            }
+        } else {
+            $result += [$dateFrom->format('d.m.Y') . '-' . $dateTo->format('d.m.Y') => NULL];
+        }
+
+        foreach ($result as $key => $value)
+        {
+            $dates = explode("-", $key);
             $data['length'] = 1;
 
-            $data['dt_ru_from'] = date_format($dateFrom, 'd.m.Y');
-            $data['dt_ru_to'] = date_format($dateTo, 'd.m.Y');
+            $data['dt_ru_from'] = $dates[0];
+            $data['dt_ru_to'] = $dates[1];
 
             $json = $this->getJSON($data)["recordsFiltered"];
+
+            // * Prevents getting incomplete data
             if ($json === NULL) {
-                $i++;
                 continue;
             }
 
-            $result += [date_format($dateFrom, 'd.m.Y') . "-" . date_format($dateTo, 'd.m.Y') => $this->getJSON($data)["recordsFiltered"]];
+            $result[$key] = $this->getJSON($data)["recordsFiltered"];
         }
 
         return $result;
