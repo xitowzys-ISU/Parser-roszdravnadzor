@@ -178,7 +178,7 @@ class UpdateData extends Model
      * @param array $data
      * @return bool
      */
-    public function saveDataInDB(array $data)
+    protected function saveDataInDB(array $data)
     {
         foreach ($data['data'] as $key => $value) {
 
@@ -233,20 +233,58 @@ class UpdateData extends Model
      * @param array $data
      * @return void
      */
-    protected function deleteDuplicateRows()
+    protected function addUniqueIndex()
     {
-        // ALTER IGNORE TABLE `medical_products` ADD UNIQUE INDEX(registry_entry_id);
+       $this->database->exec('ALTER IGNORE TABLE `medical_products` ADD UNIQUE INDEX(registry_entry_id);');
     }
 
     public function updateDataWeek()
     {
-        $total = 4535;
-        for ($i = 0; $i < $total; $i++) {
-            $percentage = $i / $total * 100;
-            showProgressBar($percentage, 2);
-        }
+        $this->database->exec('ALTER TABLE `medical_products` DROP INDEX registry_entry_id;');
+        $amountData = $this->getNumberRecordsPeriod(date("Y-m-d", strtotime("-1 week")), date("Y-m-d"));
+        $this->saveData($amountData);
+        $this->addUniqueIndex();
 
-        print PHP_EOL;
-        print "done!" . PHP_EOL;
+
+//        $this->deleteDuplicateRows();
+//        $total = 4535;
+//        for ($i = 0; $i < $total; $i++) {
+//            $percentage = $i / $total * 100;
+//            showProgressBar($percentage, 2);
+//        }
+//
+//        print PHP_EOL;
+//        print "done!" . PHP_EOL;
+    }
+
+    public function saveData ($amountData)
+    {
+        $data = require 'app/config/parser.php';
+
+        foreach ($amountData as $key => $value) {
+            $numberPages = intval(ceil($value / $data['length']));
+
+            for ($i = 0; $i < $numberPages; $i++) {
+                if ($i === 0)
+                    $json = $this->getData($key);
+                else
+                    $json = $this->getData($key, $data['length'] * $i);
+
+
+                if ($json === -1) {
+                    sleep(30);
+                    --$i;
+                    continue;
+                }
+
+                if (array_key_exists('message', $json['data'])) {
+                    sleep(30);
+                    --$i;
+                    continue;
+                }
+
+                $this->saveDataInDB($json);
+            }
+        }
     }
 }
