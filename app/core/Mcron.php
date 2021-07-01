@@ -14,4 +14,5 @@ spl_autoload_register(function ($class) {
 });
 
 $update = new UpdateData();
+$update->isConsoleUse(true);
 echo $update->updateDataWeek();

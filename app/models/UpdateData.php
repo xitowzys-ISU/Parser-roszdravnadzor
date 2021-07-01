@@ -4,9 +4,7 @@ namespace app\models;
 
 use app\core\Model;
 use app\core\Database;
-use mysql_xdevapi\Exception;
 use \PDOException;
-use \DateTime;
 use \DatePeriod;
 use \DateInterval;
 
@@ -16,6 +14,7 @@ class UpdateData extends Model
 {
 
     protected $database;
+    protected $consoleUse = false;
 
     public function __construct()
     {
@@ -23,11 +22,21 @@ class UpdateData extends Model
     }
 
     /**
+     * The script is run from the console
+     *
+     * @param boolean $consoleUse
+     * @return boolean
+     */
+    public function isConsoleUse(bool $consoleUse)
+    {
+        $this->consoleUse = $consoleUse;
+    }
+
+    /**
      * Get json from a website
      *
      * @return array
      */
-    // TODO: Сделать обработчик ошибок
     public function getJSON($data)
     {
         if ($data === NULL)
@@ -38,14 +47,11 @@ class UpdateData extends Model
         curl_setopt_array($curl, [
             CURLOPT_URL => BASIC_URL_AJAX,
             CURLOPT_RETURNTRANSFER => true,
-            // CURLOPT_ENCODING => "",
             CURLOPT_TIMEOUT => 1000,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_NONE,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => http_build_query($data),
-            CURLOPT_HTTPHEADER => [
-                "Content-Type: application/x-www-form-urlencoded"
-            ],
+            CURLOPT_HTTPHEADER => ["Content-Type: application/x-www-form-urlencoded"]
         ]);
 
         $response = curl_exec($curl);
@@ -65,7 +71,6 @@ class UpdateData extends Model
      *
      * @return bool
      */
-    // TODO: Сделать обработчик ошибок
     public function checkTableDB()
     {
         $sth = $this->database->prepare("SHOW TABLES");
@@ -82,7 +87,6 @@ class UpdateData extends Model
      *
      * @return void
      */
-    // TODO: Сделать обработчик ошибок
     public function createTableDB()
     {
         $this->database->exec(file_get_contents(SQL_DIR . "createTable.sql"));
@@ -131,8 +135,7 @@ class UpdateData extends Model
             $result += [$dateFrom->format('d.m.Y') . '-' . $dateTo->format('d.m.Y') => NULL];
         }
 
-        foreach ($result as $key => $value)
-        {
+        foreach ($result as $key => $value) {
             $dates = explode("-", $key);
             $data['length'] = 1;
 
@@ -212,9 +215,8 @@ class UpdateData extends Model
             ];
 
             try {
-                $query = $this->database->prepare(file_get_contents(__DIR__ . "/../sql/". "insertData.sql"));
+                $query = $this->database->prepare(file_get_contents(__DIR__ . "/../sql/" . "insertData.sql"));
                 $query->execute($params);
-
             } catch (PDOException $e) {
                 echo 'Не удалось добавить данные!<br />Причина: ' . $e->getMessage() . '<br>';
                 echo '<pre>';
@@ -238,14 +240,18 @@ class UpdateData extends Model
      */
     protected function addUniqueIndex()
     {
-       $this->database->exec('ALTER IGNORE TABLE `medical_products` ADD UNIQUE INDEX(registry_entry_id);');
+        $this->database->exec('ALTER IGNORE TABLE `medical_products` ADD UNIQUE INDEX(registry_entry_id);');
     }
 
+    /**
+     * Update the data for the week
+     *
+     * @return void
+     */
     public function updateDataWeek()
     {
-        try
-        {
-        $this->database->exec('ALTER TABLE `medical_products` DROP INDEX registry_entry_id;');
+        try {
+            $this->database->exec('ALTER TABLE `medical_products` DROP INDEX registry_entry_id;');
         } catch (PDOException $ex) {
             echo "No unique key" . PHP_EOL;
         }
@@ -253,27 +259,36 @@ class UpdateData extends Model
         $amountData = $this->getNumberRecordsPeriod(date("Y-m-d", strtotime("-1 week")), date("Y-m-d"));
         $this->saveData($amountData);
         $this->addUniqueIndex();
-
-
-//        $this->deleteDuplicateRows();
-//        $total = 4535;
-//        for ($i = 0; $i < $total; $i++) {
-//            $percentage = $i / $total * 100;
-//            showProgressBar($percentage, 2);
-//        }
-//
-//        print PHP_EOL;
-//        print "done!" . PHP_EOL;
     }
 
-    public function saveData ($amountData)
+    /**
+     * Downloading data and saving it to the database
+     *
+     * @param array $amountData
+     * @return void
+     */
+    public function saveData($amountData)
     {
         $data = require 'app/config/parser.php';
+
+        // Enables the counter
+        if ($this->consoleUse)
+            $z = 0;
 
         foreach ($amountData as $key => $value) {
             $numberPages = intval(ceil($value / $data['length']));
 
+            if ($this->consoleUse)
+                print  "Период: " . $key . PHP_EOL . "Записей: " . $value . PHP_EOL;
+
             for ($i = 0; $i < $numberPages; $i++) {
+
+                if ($this->consoleUse) {
+                    $percentage = $i / $numberPages * 100;
+                    showProgressBar($percentage, 2);
+                    print PHP_EOL;
+                }
+
                 if ($i === 0)
                     $json = $this->getData($key);
                 else
@@ -293,6 +308,9 @@ class UpdateData extends Model
                 }
 
                 $this->saveDataInDB($json);
+
+                if ($this->consoleUse)
+                    $z++;
             }
         }
     }

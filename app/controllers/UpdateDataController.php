@@ -3,8 +3,6 @@
 namespace app\controllers;
 
 use app\core\Controller;
-use \TypeError;
-
 
 class UpdateDataController extends Controller
 {
@@ -17,7 +15,7 @@ class UpdateDataController extends Controller
         // Filling in the database
         if (!$this->model->checkTableDB()) {
             $this->model->createTableDB();
-            $amountData = $this->getNumberRecordsPeriod("01-01-1990", date("Y-m-d"));
+            $amountData = $this->model->getNumberRecordsPeriod("01-01-1990", date("Y-m-d"));
 
             $this->model->saveData($amountData);
             $this->model->addUniqueIndex();
