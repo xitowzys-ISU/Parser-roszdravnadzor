@@ -4,6 +4,7 @@ namespace app\models;
 
 use app\core\Model;
 use app\core\Database;
+use mysql_xdevapi\Exception;
 use \PDOException;
 use \DateTime;
 use \DatePeriod;
@@ -211,7 +212,9 @@ class UpdateData extends Model
             ];
 
             try {
-                $this->database->prepare(file_get_contents(SQL_DIR . "insertData.sql"))->execute($params);
+                $query = $this->database->prepare(file_get_contents(__DIR__ . "/../sql/". "insertData.sql"));
+                $query->execute($params);
+
             } catch (PDOException $e) {
                 echo 'Не удалось добавить данные!<br />Причина: ' . $e->getMessage() . '<br>';
                 echo '<pre>';
@@ -240,7 +243,13 @@ class UpdateData extends Model
 
     public function updateDataWeek()
     {
+        try
+        {
         $this->database->exec('ALTER TABLE `medical_products` DROP INDEX registry_entry_id;');
+        } catch (PDOException $ex) {
+            echo "No unique key" . PHP_EOL;
+        }
+
         $amountData = $this->getNumberRecordsPeriod(date("Y-m-d", strtotime("-1 week")), date("Y-m-d"));
         $this->saveData($amountData);
         $this->addUniqueIndex();
