@@ -136,3 +136,18 @@ body {
     font-size: 16px;
     color: #707981;
 }
+p{
+    position: relative;
+    height: 40px;
+    line-height: 40px;
+    max-width: 400px;
+    text-align: center;
+    margin: 30px auto;
+    background: white;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 22px;
+    font-family: 'Roboto', sans-serif;
+    color: #d87d56;
+    border-bottom: 3px solid #d87d56;
+}
