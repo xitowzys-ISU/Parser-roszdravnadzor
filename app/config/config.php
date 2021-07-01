@@ -1,9 +1,9 @@
 <?php
 
-define('DB_HOST', '127.0.0.1');
+define('DB_HOST', 'localhost');
 define('DB_NAME', 'parser_roszdravnadzor');
-define('DB_USER', 'raidemot');
-define('DB_PASS', 'Yiczxsjo552880!');
+define('DB_USER', 'george_parser');
+define('DB_PASS', '12345');
 
 /**
  * Root path to the application
