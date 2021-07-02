@@ -4,7 +4,7 @@ CREATE TABLE `medical_products`  (
   `registration_number` varchar(255) NULL COMMENT 'Регистрационный номер медицинского изделия',
   `validity_period` date NULL COMMENT 'Дата государственной регистрации медицинского изделия',
   `registration_validity_period` date NULL COMMENT 'Срок действия регистрационного удостоверения',
-  `registration_validity_period_indefinitely` tinyint NULL COMMENT 'Срок действия регистрационного удостоверения (Бессрочно)',
+  `registration_validity_period_other` tinyint NULL COMMENT 'Срок действия регистрационного удостоверения (Бессрочно)',
   `name` mediumtext NULL COMMENT 'Наименование медицинского изделия',
   `applicant_organization` varchar(255) NULL COMMENT 'Наименование организации-заявителя медицинского изделия',
   `applicant_location` varchar(255) NULL COMMENT 'Место нахождения организации-заявителя медицинского изделия',
@@ -20,8 +20,7 @@ CREATE TABLE `medical_products`  (
   `analogs` text NULL COMMENT 'Сведения о взаимозаменяемых медицинских изделиях',
   `is_exist` tinyint NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `registry_entry_id_unique`(`registry_entry_id`) USING BTREE,
-  INDEX `registration_number_index`(`registration_number`) USING BTREE
+  UNIQUE INDEX `registry_entry_id_unique`(`registry_entry_id`) USING BTREE
 );
 
 CREATE TABLE `products_log`  (
