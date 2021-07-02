@@ -37,7 +37,7 @@ class UpdateData extends Model
      *
      * @return array
      */
-    public function getJSON($data)
+    public function getJSON($data = NULL)
     {
         if ($data === NULL)
             $data = require 'app/config/parser.php';
